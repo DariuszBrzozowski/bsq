@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dbrzozow <dbrzozow@student.42warsaw.p      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/26 13:08:00 by dbrzozow          #+#    #+#             */
+/*   Updated: 2026/05/26 15:53:33 by dbrzozow         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -57,9 +69,8 @@ int get_columns_cnt(char *fname, int row_cnt, char markers[3])
 	int i;
 	int j;
 
-	(void)markers;
 	j = 0;
-	/*col_cnt_per_row = {0};*/
+
         descr = open(fname, O_RDONLY);
         if (descr == -1)
                 return -1;
@@ -109,22 +120,7 @@ int	read_grid(char *fname, char **grid, int rows, int cols)
 	descr = open(fname, O_RDONLY);
 	if (descr == -1)
 		return (-1);
-	if (!grid)
-	{
-		close(descr);
-		return (-2);
-	}
 	i = 0;
-	while (i < rows)
-	{
-		grid[i] = malloc(sizeof(char) * (cols + 1));
-		if (!grid[i])
-		{
-			close(descr);
-			return (-2);
-		}
-		i++;
-	}
 	while (read(descr, &c, 1) > 0 && c != '\n');
 	i = 0;
 	while (i < rows)
@@ -139,12 +135,42 @@ int	read_grid(char *fname, char **grid, int rows, int cols)
 			grid[i][j] = c;
 			j++;
 		}
-		grid[i][j] = '\0';
 		read(descr, &c, 1);
 		i++;
 	}
 	close(descr);
 	return (0);
+}
+
+char **ft_alloc_malloc(int row, int col)
+{
+	char ** arr;
+	int i;
+	arr = malloc(sizeof(char *) * row);
+        if (!arr)
+                return(NULL);
+	i = 0;
+        while (i < row)
+        {
+                arr[i] = malloc(sizeof(char) * (col));
+                if (!arr[i])
+                        return (NULL);
+                i++;
+        }
+	return(arr);
+
+}
+
+void ft_free_malloc(char **arr, int row)
+{
+        int i;
+	i = 0;
+        while (i < row)
+        {
+                free(arr[i]);
+                i++;
+        }
+        free(arr);
 }
 
 int main(int argc, char *argv[])
@@ -153,6 +179,7 @@ int main(int argc, char *argv[])
 	int col;
 	int status;
 	int i;
+	int j;
 	char markers[3];
 	char **arr;
 
@@ -165,23 +192,24 @@ int main(int argc, char *argv[])
 	printf("%c", markers[1]);
 	printf("%c", markers[2]);
 	printf("%d", col);
-	if (row <= 0 || col <= 0)
-		return (1);
-	arr = malloc(sizeof(char *) * row);
-	if (!arr)
-		return (1);
+	printf("%c", '\n');
+	arr = ft_alloc_malloc(row, col);
 	status = read_grid(argv[1], arr, row, col);
-	if (status != 0)
+	if (status == 0)
 	{
-		free(arr);
-		return (1);
+		i = 0;
+		while ( i < row)
+		{
+			j = 0;
+			while (j < col)
+			{
+				printf("%c", arr[i][j]);
+				j++;
+			}
+			printf("%c", '\n');
+			i++;
+		}
 	}
-	i = 0;
-	while (i < row)
-	{
-		free(arr[i]);
-		i++;
-	}
-	free(arr);
+	ft_free_malloc(arr, row);
 	return (0);
 }
